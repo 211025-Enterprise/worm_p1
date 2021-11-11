@@ -1,5 +1,5 @@
 package models.annotation;
-import models.ConstraintsWorm;
+import models.enums.EnumConstraintsWorm;
 
 import java.lang.annotation.*;
 
@@ -7,5 +7,5 @@ import java.lang.annotation.*;
 @Target(ElementType.TYPE)
 public @interface FieldWorm {
 	String Name();
-	ConstraintsWorm[] constraints();
+	EnumConstraintsWorm[] constraints();
 }
