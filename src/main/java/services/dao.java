@@ -6,14 +6,15 @@ import sun.reflect.annotation.AnnotationType;
 
 
 import java.lang.reflect.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Locale;
 
 public class dao<T> {
 	public int create(Class<T> tClass,T obj) throws IllegalAccessException {
-		//TODO
-		//	get all fields in order of declaration
-		//	check for annotations
+		int output = -1;
 		String TableName;
 		if (tClass.isAnnotationPresent(ClassWorm.class)) TableName= tClass.getDeclaredAnnotation(ClassWorm.class).table();
 		else TableName = tClass.getSimpleName()+"s";
@@ -23,14 +24,20 @@ public class dao<T> {
 		StringBuilder qmks = new StringBuilder();
 		StringBuilder tble = new StringBuilder();
 
-		tble.append("CREATE TABLE ").append(TableName).append(" (\n");
+		tble.append("CREATE TABLE IF NOT EXISTS ").append(TableName).append(" (\n");
 		boolean pk = false;
+		int fieldcount = 0;
 		for (Field field:fields) {
-
-			cols.append(field.getName().toLowerCase());
-			tble.append(field.getName().toLowerCase()).append(" ");
-			tble.append(JavaTypeToSqlJava(field.getType())).append(" ");
 			FieldWorm a = field.getAnnotation(FieldWorm.class);
+			if (JavaTypeToSqlJava(field.getType()).equals("")){continue;}
+			fieldcount++;
+			String colname = field.getName().toLowerCase();
+			if (a != null) colname=a.Name().toLowerCase();
+
+			tble.append(colname).append(" ");
+			cols.append(colname);
+			tble.append(JavaTypeToSqlJava(field.getType())).append(" ");
+
 			if (a != null) {
 				EnumConstraintsWorm[] enumConstraintsWorms= a.constraints();
 				for (EnumConstraintsWorm e : enumConstraintsWorms) {
@@ -62,10 +69,51 @@ public class dao<T> {
 		tble.append("\n);");
 		System.out.println(tble.toString());
 		System.out.println("INSERT INTO "+TableName+" ("+cols+") Values ("+qmks+")");
+		String sql0 = tble.toString();
+		String sql1 = "INSERT INTO "+TableName+" ("+cols+") Values ("+qmks+")";
+		try (Connection connection= SQLConnector.getConnection(); PreparedStatement creator =  connection.prepareStatement(sql0); PreparedStatement inserter =  connection.prepareStatement(sql1);) {
+			creator.executeUpdate();
+			int loc = 1;
+			for (Field field:fields) {
+				if (JavaTypeToSqlJava(field.getType()).equals("")){continue;}
+				field.setAccessible(true);
+				switch (field.getType().getTypeName()) {
+					case "boolean":
+						inserter.setBoolean(loc++,field.getBoolean(obj));
+						break;
+					case "int":
+						inserter.setInt(loc++,field.getInt(obj));
+						break;
+					case "long":
+						inserter.setLong(loc++,field.getLong(obj));
+						break;
+					case "short":
+						inserter.setShort(loc++,field.getShort(obj));
+						break;
+					case "byte":
+						inserter.setByte(loc++,field.getByte(obj));
+						break;
+					case "float":
+						inserter.setFloat(loc++,field.getFloat(obj));
+						break;
+					case "double":
+						inserter.setDouble(loc++,field.getDouble(obj));
+						break;
+					default:
+						Object o = field.get(obj);
+						inserter.setString(loc++,(o != null)? o.toString():"null");
+						break;
+				}
+			}
+			output = inserter.executeUpdate();
+
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+		}
 
 
-
-		return -1;
+		return output;
 	}
 	public T read(Class<T> tClass,T obj){
 		return null;
