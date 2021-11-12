@@ -406,8 +406,73 @@ public class dao<T> {
 		return out;
 
 	}
-	public int delete(Class<T> tClass,T obj){
-		return -1;
+	public int delete(Class<T> tClass,Object[] vals,Field[] keys) throws WormException {
+		if (vals.length != keys.length) throw new WormException();
+		int out = -1;
+		String TableName;
+		if (tClass.isAnnotationPresent(ClassWorm.class)) TableName= tClass.getDeclaredAnnotation(ClassWorm.class).table();
+		else TableName = tClass.getSimpleName()+"s";
+		TableName = TableName.toLowerCase();
+		Field[] fields = tClass.getDeclaredFields();
+		StringBuilder keyString = new StringBuilder();
+		for (Field key:keys) {
+			if (keyString.length() > 0 ) keyString.append(" AND ");
+			String keyname =  key.getName().toLowerCase();
+			if (key.getAnnotation(FieldWorm.class) !=null)keyname = key.getAnnotation(FieldWorm.class).Name();
+			keyString.append(keyname).append(" = ?");
+		}
+
+
+		String sql = "DELETE FROM "+TableName + " WHERE "+keyString.toString();
+		try (Connection connection= SQLConnector.getConnection(); PreparedStatement selector =  connection.prepareStatement(sql); ) {
+			int loc = 1;
+			for (Object o:vals) {
+				if (JavaTypeToSqlJava(o.getClass()).equals("")){continue;}
+				switch (o.getClass().getTypeName()) {
+					case "java.lang.Boolean":
+					case "boolean":
+						selector.setBoolean(loc++, (Boolean) o);
+						break;
+					case "java.lang.Integer":
+					case "int":
+						selector.setInt(loc++, (Integer) o);
+						break;
+					case "java.lang.Long":
+					case "long":
+						selector.setLong(loc++, (Long) o);
+						break;
+					case "java.lang.Short":
+					case "short":
+						selector.setShort(loc++, (Short) o);
+						break;
+					case "java.lang.Byte":
+					case "byte":
+						selector.setByte(loc++, (Byte) o);
+						break;
+					case "java.lang.Float":
+					case "float":
+						selector.setFloat(loc++, (Float) o);
+						break;
+					case "java.lang.Double":
+					case "double":
+						selector.setDouble(loc++, (Double) o);
+						break;
+					default:
+						selector.setString(loc++, (String) o);
+						break;
+				}
+			}
+			out = selector.executeUpdate();
+
+
+
+
+		}catch (SQLException e) {
+			e.printStackTrace();
+		}
+
+
+		return out;
 	}
 
 	private String JavaTypeToSqlJava(Class<?> type){
