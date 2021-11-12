@@ -296,15 +296,15 @@ public class dao<T> {
 		return all;
 	}
 	/**
-	 * <p>Updates all rows that match vals with T obj</p>
+	 * <p>Updates all rows that match matchValues with T obj</p>
 	 * @param tClass Class of object to update
 	 * @param matchValues Values to look for in table
-	 * @param matchKeys Corresponding column names to match vals.
+	 * @param matchKeys Corresponding column names to match matchValues.
 	 * @return int of rows updated
-	 * @throws WormException is thrown if vals does not correspond to keys
+	 * @throws WormException is thrown if matchValues does not correspond to keys
 	 */
-	public int update(Class<T> tClass,T obj,Object[] vals,Field[] keys) throws WormException {
-		if (vals.length != keys.length) throw new WormException();
+	public int update(Class<T> tClass,T obj,Object[] matchValues,Field[] matchKeys) throws WormException {
+		if (matchValues.length != matchKeys.length) throw new WormException();
 		int out = -1;
 		String TableName;
 		if (tClass.isAnnotationPresent(ClassWorm.class)) TableName= tClass.getDeclaredAnnotation(ClassWorm.class).table();
@@ -317,7 +317,7 @@ public class dao<T> {
 		StringBuilder keyString = new StringBuilder();
 		StringBuilder cols = new StringBuilder();
 		StringBuilder qmks = new StringBuilder();
-		for (Field key:keys) {
+		for (Field key:matchKeys) {
 			if (keyString.length() > 0 ) keyString.append(" AND ");
 			String keyname =  key.getName().toLowerCase();
 			if (key.getAnnotation(FieldWorm.class) !=null)keyname = key.getAnnotation(FieldWorm.class).Name();
@@ -376,7 +376,7 @@ public class dao<T> {
 						break;
 				}
 			}
-			for (Object o:vals) {
+			for (Object o:matchValues) {
 				if (JavaTypeToSqlJava(o.getClass()).equals("")){continue;}
 				switch (o.getClass().getTypeName()) {
 					case "java.lang.Boolean":
@@ -428,6 +428,17 @@ public class dao<T> {
 		return out;
 
 	}
+
+	/**
+	 * <p>Updates all rows that match matchValues with changeValues</p>
+	 * @param tClass Class of object to update
+	 * @param changeValues Values to update to
+	 * @param changeKeys Corresponding column names to match changeValues.
+	 * @param matchValues Values to look for in table
+	 * @param matchKeys Corresponding column names to match matchValues.
+	 * @return
+	 * @throws WormException is thrown if Values does not correspond to keys
+	 */
 	public int update(Class<T> tClass,Object[] changeValues,Field[] changeKeys,Object[] matchValues,Field[] matchKeys) throws WormException {
 		if (matchValues.length != matchKeys.length) throw new WormException();
 		if (changeValues.length != changeKeys.length) throw new WormException();
