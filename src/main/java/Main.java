@@ -11,7 +11,7 @@ public class Main {
 	public static void main(String[] args) {
 
 		try {
-			System.out.println( new dao<TEST>().read(TEST.class,new Object[] {false},new Field[]{TEST.class.getField("z")} ));
+			System.out.println( new dao<TEST>().update(TEST.class,new TEST("dsad",1,false),new Object[] {1},new Field[]{TEST.class.getField("y")} ));
 		} catch (NoSuchFieldException | WormException e) {
 			e.printStackTrace();
 		}

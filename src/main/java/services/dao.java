@@ -31,11 +31,9 @@ public class dao<T> {
 
 		tble.append("CREATE TABLE IF NOT EXISTS ").append(TableName).append(" (\n");
 		boolean pk = false;
-		int fieldcount = 0;
 		for (Field field:fields) {
 			FieldWorm a = field.getAnnotation(FieldWorm.class);
 			if (JavaTypeToSqlJava(field.getType()).equals("")){continue;}
-			fieldcount++;
 			String colname = field.getName().toLowerCase();
 			if (a != null) colname=a.Name().toLowerCase();
 
@@ -72,8 +70,6 @@ public class dao<T> {
 		qmks.deleteCharAt(qmks.length()-1);
 		cols.deleteCharAt(cols.length()-1);
 		tble.append("\n);");
-		System.out.println(tble.toString());
-		System.out.println("INSERT INTO "+TableName+" ("+cols+") Values ("+qmks+")");
 		String sql0 = tble.toString();
 		String sql1 = "INSERT INTO "+TableName+" ("+cols+") Values ("+qmks+")";
 		try (Connection connection= SQLConnector.getConnection(); PreparedStatement creator =  connection.prepareStatement(sql0); PreparedStatement inserter =  connection.prepareStatement(sql1);) {
@@ -285,8 +281,130 @@ public class dao<T> {
 		return all;
 	}
 
-	public int update(Class<T> tClass,T obj,Object[] vals,Field[] keys){
-		return -1;
+	public int update(Class<T> tClass,T obj,Object[] vals,Field[] keys) throws WormException {
+		if (vals.length != keys.length) throw new WormException();
+		int out = -1;
+		String TableName;
+		if (tClass.isAnnotationPresent(ClassWorm.class)) TableName= tClass.getDeclaredAnnotation(ClassWorm.class).table();
+		else TableName = tClass.getSimpleName()+"s";
+		TableName = TableName.toLowerCase();
+
+
+
+		Field[] fields = tClass.getDeclaredFields();
+		StringBuilder keyString = new StringBuilder();
+		StringBuilder cols = new StringBuilder();
+		StringBuilder qmks = new StringBuilder();
+		for (Field key:keys) {
+			if (keyString.length() > 0 ) keyString.append(" AND ");
+			String keyname =  key.getName().toLowerCase();
+			if (key.getAnnotation(FieldWorm.class) !=null)keyname = key.getAnnotation(FieldWorm.class).Name();
+			keyString.append(keyname).append(" = ?");
+		}
+		for (Field field:fields) {
+			FieldWorm a = field.getAnnotation(FieldWorm.class);
+			if (JavaTypeToSqlJava(field.getType()).equals("")){continue;}
+			String colname = field.getName().toLowerCase();
+			if (a != null) colname=a.Name().toLowerCase();
+			cols.append(colname);
+			qmks.append("?");
+			cols.append(",");
+			qmks.append(",");
+		}
+		qmks.deleteCharAt(qmks.length()-1);
+		cols.deleteCharAt(cols.length()-1);
+
+		String sql = "UPDATE "+TableName + " SET ( "+cols+" )=( "+qmks+" ) WHERE "+keyString.toString();
+		try (Connection connection= SQLConnector.getConnection(); PreparedStatement selector =  connection.prepareStatement(sql); ) {
+			int loc = 1;
+			for (Field o:fields) {
+				o.setAccessible(true);
+				if (JavaTypeToSqlJava(o.getType()).equals("")){continue;}
+				switch (o.getType().toString()) {
+					case "java.lang.Boolean":
+					case "boolean":
+						selector.setBoolean(loc++, o.getBoolean(obj));
+						break;
+					case "java.lang.Integer":
+					case "int":
+						selector.setInt(loc++, o.getInt(obj));
+						break;
+					case "java.lang.Long":
+					case "long":
+						selector.setLong(loc++, o.getLong(obj));
+						break;
+					case "java.lang.Short":
+					case "short":
+						selector.setShort(loc++, o.getShort(obj));
+						break;
+					case "java.lang.Byte":
+					case "byte":
+						selector.setByte(loc++, o.getByte(obj));
+						break;
+					case "java.lang.Float":
+					case "float":
+						selector.setFloat(loc++, o.getFloat(obj));
+						break;
+					case "java.lang.Double":
+					case "double":
+						selector.setDouble(loc++, o.getDouble(obj));
+						break;
+					default:
+						selector.setString(loc++, (String) o.get(obj));
+						break;
+				}
+			}
+			for (Object o:vals) {
+				if (JavaTypeToSqlJava(o.getClass()).equals("")){continue;}
+				switch (o.getClass().getTypeName()) {
+					case "java.lang.Boolean":
+					case "boolean":
+						selector.setBoolean(loc++, (Boolean) o);
+						break;
+					case "java.lang.Integer":
+					case "int":
+						selector.setInt(loc++, (Integer) o);
+						break;
+					case "java.lang.Long":
+					case "long":
+						selector.setLong(loc++, (Long) o);
+						break;
+					case "java.lang.Short":
+					case "short":
+						selector.setShort(loc++, (Short) o);
+						break;
+					case "java.lang.Byte":
+					case "byte":
+						selector.setByte(loc++, (Byte) o);
+						break;
+					case "java.lang.Float":
+					case "float":
+						selector.setFloat(loc++, (Float) o);
+						break;
+					case "java.lang.Double":
+					case "double":
+						selector.setDouble(loc++, (Double) o);
+						break;
+					default:
+						selector.setString(loc++, (String) o);
+						break;
+				}
+			}
+
+			out= selector.executeUpdate();
+
+
+
+
+		}catch (SQLException | IllegalAccessException e) {
+			e.printStackTrace();
+		}
+
+
+
+
+		return out;
+
 	}
 	public int delete(Class<T> tClass,T obj){
 		return -1;
