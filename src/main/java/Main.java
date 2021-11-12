@@ -1,16 +1,20 @@
 
 import models.annotation.*;
 import models.enums.*;
+import models.exceptions.WormException;
 import services.dao;
+
+import java.lang.reflect.Field;
+import java.util.List;
 
 public class Main {
 	public static void main(String[] args) {
+
 		try {
-			new dao<TEST>().create(TEST.class,new TEST("hello",1,false));
-		} catch (IllegalAccessException e) {
+			System.out.println( new dao<TEST>().read(TEST.class,new Object[] {false},new Field[]{TEST.class.getField("z")} ));
+		} catch (NoSuchFieldException | WormException e) {
 			e.printStackTrace();
 		}
-
 	}
 }
 
@@ -25,5 +29,16 @@ class TEST{
 		this.x = x;
 		this.y = y;
 		this.z = z;
+	}
+	TEST(){};
+
+	@Override
+	public String toString() {
+		return "TEST{" +
+			"x='" + x + '\'' +
+			", y=" + y +
+			", z=" + z +
+			", object=" + object +
+			'}';
 	}
 }
