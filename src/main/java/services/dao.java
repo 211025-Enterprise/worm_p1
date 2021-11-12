@@ -1,23 +1,25 @@
 package services;
-
 import models.annotation.*;
-import models.enums.EnumConstraintsWorm;
-import models.exceptions.WormException;
-import sun.plugin.security.StripClassFile;
-import sun.reflect.annotation.AnnotationType;
-
-
+import models.enums.*;
+import models.exceptions.*;
 import java.lang.reflect.*;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
+import java.sql.*;
+import java.util.*;
 
+/**
+ * <h3>Holds the generic functions to store any object that has primitive fields and ignores object fields except for String</h3>
+ * @author ryanh
+ * @version 1
+ *
+ */
 public class dao<T> {
+	/**
+	 * <p>Create a row on the objects table in the database. Will create a table if none exists</p>
+	 * @param tClass Objects Class to insert
+	 * @param obj Object to insert
+	 * @return int number of rows edited
+	 * @throws IllegalAccessException if field on object could not be accessed
+	 */
 	public int create(Class<T> tClass,T obj) throws IllegalAccessException {
 		int output = -1;
 		String TableName;
@@ -116,6 +118,14 @@ public class dao<T> {
 
 		return output;
 	}
+	/**
+	 * <p>gets an object from its matching table with the matching values</p>
+	 * @param tClass Class of object to get.
+	 * @param vals Array of Objects to look for in table.
+	 * @param keys Corresponding column names to match vals.
+	 * @return List<T> All matching objects in table.
+	 * @throws WormException is thrown if vals does not correspond to keys
+	 */
 	public List<T> read(Class<T> tClass,Object[] vals,Field[] keys) throws WormException {
 		if (vals.length != keys.length) throw new WormException();
 		else if(vals.length == 0) return readAll(tClass);
@@ -224,6 +234,11 @@ public class dao<T> {
 		return out;
 
 	}
+	/**
+	 * Gets all objects from object table
+	 * @param tClass Class of object to get from its table
+	 * @return List<T> all objects of type tClass
+	 */
 	public List<T> readAll(Class<T> tClass){
 		List<T> all = new ArrayList<>();
 		String TableName;
@@ -280,7 +295,15 @@ public class dao<T> {
 		}
 		return all;
 	}
-
+	/**
+	 * <p>Updates all rows that match vals with T obj</p>
+	 * @param tClass Class of object to update
+	 * @param obj Object used as update
+	 * @param vals Values to look for in table
+	 * @param keys Corresponding column names to match vals.
+	 * @return int of rows updated
+	 * @throws WormException is thrown if vals does not correspond to keys
+	 */
 	public int update(Class<T> tClass,T obj,Object[] vals,Field[] keys) throws WormException {
 		if (vals.length != keys.length) throw new WormException();
 		int out = -1;
@@ -406,6 +429,15 @@ public class dao<T> {
 		return out;
 
 	}
+
+	/**
+	 * <p>Deletes row[s] from object table</p>
+	 * @param tClass Class of object to delete
+	 * @param vals Values to look for in table
+	 * @param keys Corresponding column names to match vals.
+	 * @return int of rows deleted
+	 * @throws WormException is thrown if vals does not correspond to keys
+	 */
 	public int delete(Class<T> tClass,Object[] vals,Field[] keys) throws WormException {
 		if (vals.length != keys.length) throw new WormException();
 		int out = -1;
@@ -474,7 +506,6 @@ public class dao<T> {
 
 		return out;
 	}
-
 	private String JavaTypeToSqlJava(Class<?> type){
 		switch (type.getTypeName()){
 			case "java.lang.Boolean":
