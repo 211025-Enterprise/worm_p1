@@ -10,11 +10,6 @@ import java.util.List;
 public class Main {
 	public static void main(String[] args) {
 
-		try {
-			System.out.println( new dao<TEST>().update(TEST.class,new Object[]{"FALSE"},new Field[]{TEST.class.getField("x")},new Object[] {true},new Field[]{TEST.class.getField("z")} ));
-		} catch (NoSuchFieldException | WormException e) {
-			e.printStackTrace();
-		}
 	}
 }
 

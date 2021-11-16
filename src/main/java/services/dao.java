@@ -20,7 +20,7 @@ public class dao<T> {
 	 * @return int number of rows edited
 	 * @throws IllegalAccessException if field on object could not be accessed
 	 */
-	public int create(Class<T> tClass,T obj) throws IllegalAccessException {
+	public int create(Class<T> tClass,T obj,Connection connection) throws IllegalAccessException {
 		int output = -1;
 		String TableName;
 		if (tClass.isAnnotationPresent(ClassWorm.class)) TableName= tClass.getDeclaredAnnotation(ClassWorm.class).table();
@@ -74,7 +74,7 @@ public class dao<T> {
 		tble.append("\n);");
 		String sql0 = tble.toString();
 		String sql1 = "INSERT INTO "+TableName+" ("+cols+") Values ("+qmks+")";
-		try (Connection connection= SQLConnector.getConnection(); PreparedStatement creator =  connection.prepareStatement(sql0); PreparedStatement inserter =  connection.prepareStatement(sql1);) {
+		try (PreparedStatement creator =  connection.prepareStatement(sql0); PreparedStatement inserter =  connection.prepareStatement(sql1);) {
 			creator.executeUpdate();
 			int loc = 1;
 			for (Field field:fields) {
@@ -121,14 +121,14 @@ public class dao<T> {
 	/**
 	 * <p>gets an object from its matching table with the matching values</p>
 	 * @param tClass Class of object to get.
-	 * @param vals Array of Objects to look for in table.
-	 * @param keys Corresponding column names to match vals.
+	 * @param matchValues Array of Objects to look for in table.
+	 * @param matchKeys Corresponding column names to match vals.
 	 * @return List<T> All matching objects in table.
 	 * @throws WormException is thrown if vals does not correspond to keys
 	 */
-	public List<T> read(Class<T> tClass,Object[] vals,Field[] keys) throws WormException {
-		if (vals.length != keys.length) throw new WormException();
-		else if(vals.length == 0) return readAll(tClass);
+	public List<T> read(Class<T> tClass,Object[] matchValues,Field[] matchKeys,Connection connection) throws WormException {
+		if (matchValues.length != matchKeys.length) throw new WormException();
+		else if(matchValues.length == 0) return readAll(tClass,connection);
 		List<T> out = new ArrayList<>();
 		String TableName;
 		if (tClass.isAnnotationPresent(ClassWorm.class)) TableName= tClass.getDeclaredAnnotation(ClassWorm.class).table();
@@ -136,7 +136,7 @@ public class dao<T> {
 		TableName = TableName.toLowerCase();
 		Field[] fields = tClass.getDeclaredFields();
 		StringBuilder keyString = new StringBuilder();
-		for (Field key:keys) {
+		for (Field key:matchKeys) {
 			if (keyString.length() > 0 ) keyString.append(" AND ");
 			String keyname =  key.getName().toLowerCase();
 			if (key.getAnnotation(FieldWorm.class) !=null)keyname = key.getAnnotation(FieldWorm.class).Name();
@@ -145,9 +145,9 @@ public class dao<T> {
 
 
 		String sql = "SELECT * FROM "+TableName + " WHERE "+keyString.toString();
-		try (Connection connection= SQLConnector.getConnection(); PreparedStatement selector =  connection.prepareStatement(sql); ) {
+		try (PreparedStatement selector =  connection.prepareStatement(sql); ) {
 			int loc = 1;
-			for (Object o:vals) {
+			for (Object o:matchValues) {
 				if (JavaTypeToSqlJava(o.getClass()).equals("")){continue;}
 				switch (o.getClass().getTypeName()) {
 					case "java.lang.Boolean":
@@ -239,7 +239,7 @@ public class dao<T> {
 	 * @param tClass Class of object to get from its table
 	 * @return List<T> all objects of type tClass
 	 */
-	public List<T> readAll(Class<T> tClass){
+	public List<T> readAll(Class<T> tClass,Connection connection){
 		List<T> all = new ArrayList<>();
 		String TableName;
 		if (tClass.isAnnotationPresent(ClassWorm.class)) TableName= tClass.getDeclaredAnnotation(ClassWorm.class).table();
@@ -247,7 +247,7 @@ public class dao<T> {
 		TableName = TableName.toLowerCase();
 		Field[] fields = tClass.getDeclaredFields();
 		String sql = "SELECT * FROM "+TableName;
-		try (Connection connection= SQLConnector.getConnection(); PreparedStatement selector =  connection.prepareStatement(sql); ) {
+		try ( PreparedStatement selector =  connection.prepareStatement(sql); ) {
 			ResultSet resultSet = selector.executeQuery();
 			while (resultSet.next()){
 				Constructor<?> constructor = Arrays.stream(tClass.getDeclaredConstructors()).filter(x->x.getParameterCount() == 0).findFirst().orElse(null);
@@ -303,7 +303,7 @@ public class dao<T> {
 	 * @return int of rows updated
 	 * @throws WormException is thrown if matchValues does not correspond to keys
 	 */
-	public int update(Class<T> tClass,T obj,Object[] matchValues,Field[] matchKeys) throws WormException {
+	public int update(Class<T> tClass,T obj,Object[] matchValues,Field[] matchKeys,Connection connection) throws WormException {
 		if (matchValues.length != matchKeys.length) throw new WormException();
 		int out = -1;
 		String TableName;
@@ -337,7 +337,7 @@ public class dao<T> {
 		cols.deleteCharAt(cols.length()-1);
 
 		String sql = "UPDATE "+TableName + " SET ( "+cols+" )=( "+qmks+" ) WHERE "+keyString.toString();
-		try (Connection connection= SQLConnector.getConnection(); PreparedStatement selector =  connection.prepareStatement(sql); ) {
+		try ( PreparedStatement selector =  connection.prepareStatement(sql) ) {
 			int loc = 1;
 			for (Field o:fields) {
 				o.setAccessible(true);
@@ -428,7 +428,6 @@ public class dao<T> {
 		return out;
 
 	}
-
 	/**
 	 * <p>Updates all rows that match matchValues with changeValues</p>
 	 * @param tClass Class of object to update
@@ -436,10 +435,10 @@ public class dao<T> {
 	 * @param changeKeys Corresponding column names to match changeValues.
 	 * @param matchValues Values to look for in table
 	 * @param matchKeys Corresponding column names to match matchValues.
-	 * @return
+	 * @return int of updated rows
 	 * @throws WormException is thrown if Values does not correspond to keys
 	 */
-	public int update(Class<T> tClass,Object[] changeValues,Field[] changeKeys,Object[] matchValues,Field[] matchKeys) throws WormException {
+	public int update(Class<T> tClass,Object[] changeValues,Field[] changeKeys,Object[] matchValues,Field[] matchKeys,Connection connection) throws WormException {
 		if (matchValues.length != matchKeys.length) throw new WormException();
 		if (changeValues.length != changeKeys.length) throw new WormException();
 		int out = -1;
@@ -480,7 +479,7 @@ public class dao<T> {
 			qmks.append(')');
 		}
 		String sql = "UPDATE "+TableName + " SET "+cols+"="+qmks+" WHERE "+keyString.toString();
-		try (Connection connection= SQLConnector.getConnection(); PreparedStatement selector =  connection.prepareStatement(sql); ) {
+		try ( PreparedStatement selector =  connection.prepareStatement(sql); ) {
 			int loc = 1;
 			for (Object o:changeValues) {
 				if (JavaTypeToSqlJava(o.getClass()).equals("")){continue;}
@@ -574,13 +573,13 @@ public class dao<T> {
 	/**
 	 * <p>Deletes row[s] from object table</p>
 	 * @param tClass Class of object to delete
-	 * @param vals Values to look for in table
-	 * @param keys Corresponding column names to match vals.
+	 * @param matchValues Values to look for in table
+	 * @param matchKeys Corresponding column names to match vals.
 	 * @return int of rows deleted
 	 * @throws WormException is thrown if vals does not correspond to keys
 	 **/
-	public int delete(Class<T> tClass,Object[] vals,Field[] keys) throws WormException {
-		if (vals.length != keys.length) throw new WormException();
+	public int delete(Class<T> tClass,Object[] matchValues,Field[] matchKeys,Connection connection) throws WormException {
+		if (matchValues.length != matchKeys.length) throw new WormException();
 		int out = -1;
 		String TableName;
 		if (tClass.isAnnotationPresent(ClassWorm.class)) TableName= tClass.getDeclaredAnnotation(ClassWorm.class).table();
@@ -588,7 +587,7 @@ public class dao<T> {
 		TableName = TableName.toLowerCase();
 		Field[] fields = tClass.getDeclaredFields();
 		StringBuilder keyString = new StringBuilder();
-		for (Field key:keys) {
+		for (Field key:matchKeys) {
 			if (keyString.length() > 0 ) keyString.append(" AND ");
 			String keyname =  key.getName().toLowerCase();
 			if (key.getAnnotation(FieldWorm.class) !=null)keyname = key.getAnnotation(FieldWorm.class).Name();
@@ -597,9 +596,9 @@ public class dao<T> {
 
 
 		String sql = "DELETE FROM "+TableName + " WHERE "+keyString.toString();
-		try (Connection connection= SQLConnector.getConnection(); PreparedStatement selector =  connection.prepareStatement(sql); ) {
+		try ( PreparedStatement selector =  connection.prepareStatement(sql); ) {
 			int loc = 1;
-			for (Object o:vals) {
+			for (Object o:matchValues) {
 				if (JavaTypeToSqlJava(o.getClass()).equals("")){continue;}
 				switch (o.getClass().getTypeName()) {
 					case "java.lang.Boolean":
