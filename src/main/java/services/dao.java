@@ -80,6 +80,8 @@ public class dao<T> {
 			for (Field field:fields) {
 				if (JavaTypeToSqlJava(field.getType()).equals("")){continue;}
 				field.setAccessible(true);
+				inserter.setObject(loc++,field.get(obj));
+				/*
 				switch (field.getType().getTypeName()) {
 					case "boolean":
 						inserter.setBoolean(loc++,field.getBoolean(obj));
@@ -107,6 +109,8 @@ public class dao<T> {
 						inserter.setString(loc++,(o != null)? o.toString():"null");
 						break;
 				}
+
+				 */
 			}
 			output = inserter.executeUpdate();
 
@@ -114,8 +118,6 @@ public class dao<T> {
 		catch (SQLException e) {
 			e.printStackTrace();
 		}
-
-
 		return output;
 	}
 	/**
@@ -143,11 +145,12 @@ public class dao<T> {
 			keyString.append(keyname).append(" = ?");
 		}
 
-
 		String sql = "SELECT * FROM "+TableName + " WHERE "+keyString.toString();
 		try (PreparedStatement selector =  connection.prepareStatement(sql); ) {
 			int loc = 1;
 			for (Object o:matchValues) {
+				selector.setObject(loc++,o);
+				/*
 				if (JavaTypeToSqlJava(o.getClass()).equals("")){continue;}
 				switch (o.getClass().getTypeName()) {
 					case "java.lang.Boolean":
@@ -182,6 +185,8 @@ public class dao<T> {
 						selector.setString(loc++, (String) o);
 						break;
 				}
+
+				 */
 			}
 			ResultSet resultSet = selector.executeQuery();
 			while (resultSet.next()){
@@ -192,6 +197,8 @@ public class dao<T> {
 				for (Field field:fields) {
 					if (JavaTypeToSqlJava(field.getType()).equals("")){continue;}
 					field.setAccessible(true);
+					field.set(obj,resultSet.getObject(loc++));
+					/*
 					switch (field.getType().getTypeName()) {
 						case "boolean":
 							field.setBoolean(obj,resultSet.getBoolean(loc++));
@@ -218,7 +225,7 @@ public class dao<T> {
 							field.set(obj, resultSet.getString(loc++));
 							break;
 					}
-
+					*/
 				}
 				out.add(obj);
 			}
@@ -257,6 +264,8 @@ public class dao<T> {
 				for (Field field:fields) {
 					if (JavaTypeToSqlJava(field.getType()).equals("")){continue;}
 					field.setAccessible(true);
+					field.set(obj,resultSet.getObject(loc++));
+					/*
 					switch (field.getType().getTypeName()) {
 						case "boolean":
 							field.setBoolean(obj,resultSet.getBoolean(loc++));
@@ -283,6 +292,8 @@ public class dao<T> {
 							field.set(obj, resultSet.getString(loc++));
 							break;
 					}
+
+					 */
 
 				}
 				all.add(obj);
@@ -342,6 +353,8 @@ public class dao<T> {
 			for (Field o:fields) {
 				o.setAccessible(true);
 				if (JavaTypeToSqlJava(o.getType()).equals("")){continue;}
+				selector.setObject(loc++, o.get(obj));
+				/*
 				switch (o.getType().toString()) {
 					case "java.lang.Boolean":
 					case "boolean":
@@ -375,9 +388,13 @@ public class dao<T> {
 						selector.setString(loc++, (String) o.get(obj));
 						break;
 				}
+
+				 */
 			}
 			for (Object o:matchValues) {
 				if (JavaTypeToSqlJava(o.getClass()).equals("")){continue;}
+				selector.setObject(loc++,o);
+				/*
 				switch (o.getClass().getTypeName()) {
 					case "java.lang.Boolean":
 					case "boolean":
@@ -411,6 +428,8 @@ public class dao<T> {
 						selector.setString(loc++, (String) o);
 						break;
 				}
+
+				 */
 			}
 
 			out= selector.executeUpdate();
@@ -481,8 +500,11 @@ public class dao<T> {
 		String sql = "UPDATE "+TableName + " SET "+cols+"="+qmks+" WHERE "+keyString.toString();
 		try ( PreparedStatement selector =  connection.prepareStatement(sql); ) {
 			int loc = 1;
+
 			for (Object o:changeValues) {
 				if (JavaTypeToSqlJava(o.getClass()).equals("")){continue;}
+				selector.setObject(loc++, o);
+				/*
 				switch (o.getClass().getTypeName().toString()) {
 					case "java.lang.Boolean":
 					case "boolean":
@@ -516,9 +538,13 @@ public class dao<T> {
 						selector.setString(loc++, (String) o);
 						break;
 				}
+
+			 */
 			}
 			for (Object o:matchValues) {
 				if (JavaTypeToSqlJava(o.getClass()).equals("")){continue;}
+				selector.setObject(loc++, o);
+				/*
 				switch (o.getClass().getTypeName()) {
 					case "java.lang.Boolean":
 					case "boolean":
@@ -552,6 +578,7 @@ public class dao<T> {
 						selector.setString(loc++, (String) o);
 						break;
 				}
+				*/
 			}
 
 			System.out.println(selector);
@@ -593,13 +620,13 @@ public class dao<T> {
 			if (key.getAnnotation(FieldWorm.class) !=null)keyname = key.getAnnotation(FieldWorm.class).Name();
 			keyString.append(keyname).append(" = ?");
 		}
-
-
 		String sql = "DELETE FROM "+TableName + " WHERE "+keyString.toString();
 		try ( PreparedStatement selector =  connection.prepareStatement(sql); ) {
 			int loc = 1;
 			for (Object o:matchValues) {
 				if (JavaTypeToSqlJava(o.getClass()).equals("")){continue;}
+				selector.setObject(loc++, o);
+				/*
 				switch (o.getClass().getTypeName()) {
 					case "java.lang.Boolean":
 					case "boolean":
@@ -633,12 +660,10 @@ public class dao<T> {
 						selector.setString(loc++, (String) o);
 						break;
 				}
+
+				 */
 			}
 			out = selector.executeUpdate();
-
-
-
-
 		}catch (SQLException e) {
 			e.printStackTrace();
 		}

@@ -9,7 +9,6 @@ public class SQLConnector {
 	private static final String username = "rhaynes";
 	private static final String password = "WarpDamm1tWarp!!";
 	private static SQLConnector instance;
-	private static Connection connection;
 
 	private SQLConnector() {
 	}
@@ -20,16 +19,15 @@ public class SQLConnector {
 	}
 	//connects to sql server
 	public static Connection getConnection() throws SQLException {
-		if (connection == null || connection.isClosed()) {
-			try {
-				Class.forName("org.postgresql.Driver");
+		try {
+			Class.forName("org.postgresql.Driver");
 
-				connection = DriverManager.getConnection(url, username, password);
-			} catch (ClassNotFoundException | SQLException e) {
-				e.printStackTrace();
-			}
+			return DriverManager.getConnection(url, username, password);
+		} catch (ClassNotFoundException | SQLException e) {
+			e.printStackTrace();
 		}
-		return connection;
+
+		return null;
 
 	}
 }
