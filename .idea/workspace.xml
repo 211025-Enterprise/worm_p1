@@ -5,17 +5,13 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c01acd87-6252-415e-a01c-a033c074fde8" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/buildspec.yml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/encodings.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/revature/Main.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/jarRepositories.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/jarRepositories.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/Main.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/models/annotation/ClassWorm.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/revature/models/annotation/ClassWorm.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/models/annotation/FieldWorm.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/revature/models/annotation/FieldWorm.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/models/enums/EnumConstraintsWorm.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/revature/models/enums/EnumConstraintsWorm.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/models/exceptions/WormException.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/revature/models/exceptions/WormException.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/services/SQLConnector.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/revature/services/SQLConnector.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/services/Worm.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/revature/Worm.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/services/dao.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/revature/services/dao.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/revature/models/enums/EnumConstraintsWorm.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/revature/models/enums/EnumConstraintsWorm.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/revature/services/dao.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/revature/services/dao.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -69,6 +65,7 @@
     <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="last_directory_selection" value="$PROJECT_DIR$/src/main/java" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
@@ -81,7 +78,20 @@
       <recent name="" />
     </key>
   </component>
-  <component name="RunManager">
+  <component name="RunManager" selected="Application.Main (1)">
+    <configuration name="Main (1)" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="com.revature.Main" />
+      <module name="worm_p1" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.revature.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="Main" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="Main" />
       <module name="worm_p1" />
@@ -91,6 +101,7 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Application.Main (1)" />
         <item itemvalue="Application.Main" />
       </list>
     </recent_temporary>

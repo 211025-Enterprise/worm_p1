@@ -3,7 +3,6 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
     <groupId>com.revature</groupId>
     <artifactId>worm_p1</artifactId>
     <version>0.0.1</version>
@@ -18,6 +17,13 @@
         <artifactId>postgresql</artifactId>
         <version>42.3.1</version>
     </dependency></dependencies>
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <name>GitHub rphaynes Apache Maven Packages</name>
+            <url>https://maven.pkg.github.com/rphaynes/worm_p1</url>
+        </repository>
+    </distributionManagement>
 
 
 </project>
