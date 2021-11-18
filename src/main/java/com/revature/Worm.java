@@ -1,4 +1,7 @@
-package services;
+package com.revature;
+import com.revature.services.SQLConnector;
+import com.revature.services.dao;
+
 import java.lang.reflect.Field;
 import java.sql.*;
 import java.util.List;

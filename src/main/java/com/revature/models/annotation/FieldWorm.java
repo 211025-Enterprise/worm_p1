@@ -1,5 +1,5 @@
-package models.annotation;
-import models.enums.EnumConstraintsWorm;
+package com.revature.models.annotation;
+import com.revature.models.enums.EnumConstraintsWorm;
 
 import java.lang.annotation.*;
 

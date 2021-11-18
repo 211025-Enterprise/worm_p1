@@ -1,4 +1,4 @@
-package models.annotation;
+package com.revature.models.annotation;
 import java.lang.annotation.*;
 
 @Retention(RetentionPolicy.RUNTIME)

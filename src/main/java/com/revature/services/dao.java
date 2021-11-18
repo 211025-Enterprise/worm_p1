@@ -1,10 +1,11 @@
-package services;
-import models.annotation.*;
-import models.enums.*;
-import models.exceptions.*;
+package com.revature.services;
+import com.revature.models.annotation.*;
+import com.revature.models.enums.*;
+import com.revature.models.exceptions.*;
 import java.lang.reflect.*;
 import java.sql.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * <h3>Holds the generic functions to store any object that has primitive fields and ignores object fields except for String</h3>
