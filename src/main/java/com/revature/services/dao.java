@@ -129,7 +129,7 @@ public class dao<T> {
 	 * @return List<T> All matching objects in table.
 	 * @throws WormException is thrown if vals does not correspond to keys
 	 */
-	public List<T> read(Class<T> tClass,Object[] matchValues,Field[] matchKeys,Connection connection) throws WormException {
+	public List<T> read(Class<T> tClass,Object[] matchValues,String[] operators ,Field[] matchKeys,Connection connection, boolean and) throws WormException {
 		if (matchValues.length != matchKeys.length) throw new WormException();
 		else if(matchValues.length == 0) return readAll(tClass,connection);
 		List<T> out = new ArrayList<>();
@@ -139,11 +139,14 @@ public class dao<T> {
 		TableName = TableName.toLowerCase();
 		Field[] fields = tClass.getDeclaredFields();
 		StringBuilder keyString = new StringBuilder();
+		int i = 0;
 		for (Field key:matchKeys) {
-			if (keyString.length() > 0 ) keyString.append(" AND ");
+
+			String comparitor = (and)? "AND":"OR";
+			if (keyString.length() > 0 ) keyString.append(" ").append(comparitor).append(" ");
 			String keyname =  key.getName().toLowerCase();
 			if (key.getAnnotation(FieldWorm.class) !=null)keyname = key.getAnnotation(FieldWorm.class).Name();
-			keyString.append(keyname).append(" = ?");
+			keyString.append(keyname).append(" ").append(operators[i++]).append(" ?");
 		}
 
 		String sql = "SELECT * FROM "+TableName + " WHERE "+keyString.toString();

@@ -35,8 +35,11 @@ public class Worm {
 		return -1;
 	}
 	private void freeConnection(int conID){
-		connectionsInUse[conID] = false;
-		connectionsInUse.notify();
+		synchronized (connectionsInUse){
+			connectionsInUse[conID] = false;
+			connectionsInUse.notify();
+		}
+
 	}
 
 
@@ -82,14 +85,27 @@ public class Worm {
 	static public int    add(Object object){
 		Future<Integer> fb= threadPool.submit(()-> {
 			int i = -1;
-			while ((i = getInstance().getFreeConnection())==-1) {System.out.println("Waiting");connectionsInUse.wait();
+			int out = 0;
+			while ((i = getInstance().getFreeConnection())==-1) {System.out.println("Waiting");
+				synchronized (connectionsInUse){
+					connectionsInUse.wait();
 				}
-			return new dao().create(object.getClass(),object,connections[i]);
+
+				}
+			try {
+				out = new dao().create(object.getClass(),object,connections[i]);
+			} catch (IllegalAccessException e) {
+				e.printStackTrace();
+			}
+			getInstance().freeConnection(i);
+			return out;
 		});
 		try {
 			return fb.get();
 		} catch (InterruptedException | ExecutionException e) {
 			e.printStackTrace();
+		} finally {
+
 		}
 		return -1;
 	}
@@ -102,9 +118,16 @@ public class Worm {
 	static public List<?>    get(Class<?> clazz){
 		Future<List<?>> fb= threadPool.submit(()-> {
 			int i = -1;
-			while ((i = getInstance().getFreeConnection())==-1) {System.out.println("Waiting");connectionsInUse.wait();
+			List<?> list = null;
+			while ((i = getInstance().getFreeConnection())==-1) {System.out.println("Waiting");
+				synchronized (connectionsInUse){
+					connectionsInUse.wait();
+				}
+
 			}
-			return new dao().readAll(clazz,connections[i]);
+			list = new dao().readAll(clazz,connections[i]);
+			getInstance().freeConnection(i);
+			return list;
 		});
 		try {
 			return fb.get();
@@ -123,9 +146,48 @@ public class Worm {
 	static public List<?>    get(Class<?> clazz,Object[] matchValues,Field[] matchKeys){
 		Future<List<?>> fb= threadPool.submit(()-> {
 			int i = -1;
-			while ((i = getInstance().getFreeConnection())==-1) {System.out.println("Waiting");connectionsInUse.wait();
+			List<?> list = null;
+			while ((i = getInstance().getFreeConnection())==-1) {System.out.println("Waiting");
+				synchronized (connectionsInUse){
+					connectionsInUse.wait();
+				}
+
 			}
-			return new dao().read(clazz,matchValues,matchKeys,connections[i]);
+			String[] chars = new String[matchKeys.length];
+			for (int j = 0; j < chars.length; j++) {
+				chars[j] = "=";
+			}
+			list = new dao().read(clazz,matchValues,chars,matchKeys,connections[i],true);
+			getInstance().freeConnection(i);
+			return list;
+		});
+		try {
+			return fb.get();
+		} catch (InterruptedException | ExecutionException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	/**
+	 * <p>gets an object from its matching table with the matching values</p>
+	 * @param clazz Class of object to get.
+	 * @param matchValues Array of Objects to look for in table.
+	 * @param matchKeys Corresponding column names to match vals.
+	 * @return List<T> All matching objects in table.
+	 */
+	static public List<?>    get(Class<?> clazz,Object[] matchValues,String[] comperators,Field[] matchKeys,boolean useAnd){
+		Future<List<?>> fb= threadPool.submit(()-> {
+			List<?> list = null;
+			int i = -1;
+			while ((i = getInstance().getFreeConnection())==-1) {System.out.println("Waiting");
+				synchronized (connectionsInUse){
+					connectionsInUse.wait();
+				}
+
+			}
+			list = new dao().read(clazz,matchValues,comperators,matchKeys,connections[i],useAnd);
+			getInstance().freeConnection(i);
+			return list;
 		});
 		try {
 			return fb.get();
@@ -144,9 +206,16 @@ public class Worm {
 	static public Integer update(Class<?> clazz,Object obj,Object[] matchValues,Field[] matchKeys){
 		Future<Integer> fb= threadPool.submit(()-> {
 			int i = -1;
-			while ((i = getInstance().getFreeConnection())==-1) {System.out.println("Waiting");connectionsInUse.wait();
+			int out = -1;
+			while ((i = getInstance().getFreeConnection())==-1) {System.out.println("Waiting");
+				synchronized (connectionsInUse){
+					connectionsInUse.wait();
+				}
+
 			}
-			return new dao().update(clazz,obj,matchValues,matchKeys,connections[i]);
+			out = new dao().update(clazz,obj,matchValues,matchKeys,connections[i]);
+			getInstance().freeConnection(i);
+			return out;
 		});
 		try {
 			return fb.get();
@@ -167,9 +236,16 @@ public class Worm {
 	static public Integer update(Class<?> clazz,Object[] changeValues,Field[] changeKeys,Object[] matchValues,Field[] matchKeys){
 		Future<Integer> fb= threadPool.submit(()-> {
 			int i = -1;
-			while ((i = getInstance().getFreeConnection())==-1) {System.out.println("Waiting");connectionsInUse.wait();
+			int out = 0;
+			while ((i = getInstance().getFreeConnection())==-1) {System.out.println("Waiting");
+				synchronized (connectionsInUse){
+					connectionsInUse.wait();
+				}
+
 			}
-			return new dao().update(clazz,changeValues,changeKeys,matchValues,matchKeys,connections[i]);
+			out = new dao().update(clazz,changeValues,changeKeys,matchValues,matchKeys,connections[i]);
+			getInstance().freeConnection(i);
+			return out;
 		});
 		try {
 			return fb.get();
@@ -188,9 +264,17 @@ public class Worm {
 	static public int delete(Class<?> clazz,Object[] matchValues,Field[] matchKeys){
 		Future<Integer> fb= threadPool.submit(()-> {
 		int i = -1;
-		while ((i = getInstance().getFreeConnection())==-1) {System.out.println("Waiting");connectionsInUse.wait();
-		}
-		return new dao().delete(clazz,matchValues,matchKeys,connections[i]);
+		int out = -1;
+		while ((i = getInstance().getFreeConnection())==-1) {System.out.println("Waiting");
+				synchronized (connectionsInUse){
+					connectionsInUse.wait();
+				}
+
+			}
+
+		out = new dao().delete(clazz,matchValues,matchKeys,connections[i]);
+		getInstance().freeConnection(i);
+		return out;
 	});
 		try {
 			return fb.get();
