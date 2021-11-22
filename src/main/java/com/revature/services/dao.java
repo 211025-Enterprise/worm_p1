@@ -18,10 +18,10 @@ public class dao<T> {
 	 * <p>Create a row on the objects table in the database. Will create a table if none exists</p>
 	 * @param tClass Objects Class to insert
 	 * @param obj Object to insert
-	 * @return int number of rows edited
+	 * @return obj inserted or null
 	 * @throws IllegalAccessException if field on object could not be accessed
 	 */
-	public int create(Class<T> tClass,T obj,Connection connection) throws IllegalAccessException {
+	public T create(Class<T> tClass,T obj,Connection connection) throws IllegalAccessException {
 		int output = -1;
 		String TableName;
 		if (tClass.isAnnotationPresent(ClassWorm.class)) TableName= tClass.getDeclaredAnnotation(ClassWorm.class).table();
@@ -82,52 +82,24 @@ public class dao<T> {
 				if (JavaTypeToSqlJava(field.getType()).equals("")){continue;}
 				field.setAccessible(true);
 				inserter.setObject(loc++,field.get(obj));
-				/*
-				switch (field.getType().getTypeName()) {
-					case "boolean":
-						inserter.setBoolean(loc++,field.getBoolean(obj));
-						break;
-					case "int":
-						inserter.setInt(loc++,field.getInt(obj));
-						break;
-					case "long":
-						inserter.setLong(loc++,field.getLong(obj));
-						break;
-					case "short":
-						inserter.setShort(loc++,field.getShort(obj));
-						break;
-					case "byte":
-						inserter.setByte(loc++,field.getByte(obj));
-						break;
-					case "float":
-						inserter.setFloat(loc++,field.getFloat(obj));
-						break;
-					case "double":
-						inserter.setDouble(loc++,field.getDouble(obj));
-						break;
-					default:
-						Object o = field.get(obj);
-						inserter.setString(loc++,(o != null)? o.toString():"null");
-						break;
-				}
 
-				 */
 			}
-			output = inserter.executeUpdate();
+			if (inserter.executeUpdate() > 0) return obj;
+			else return null;
 
 		}
 		catch (SQLException e) {
 			e.printStackTrace();
 		}
-		return output;
+		return null;
 	}
 	/**
 	 * <p>gets an object from its matching table with the matching values</p>
 	 * @param tClass Class of object to get.
 	 * @param matchValues Array of Objects to look for in table.
-	 * @param matchKeys Corresponding column names to match vals.
+	 * @param matchKeys Corresponding column names to match matchValues.
 	 * @return List<T> All matching objects in table.
-	 * @throws WormException is thrown if vals does not correspond to keys
+	 * @throws WormException is thrown if matchValues does not correspond to keys
 	 */
 	public List<T> read(Class<T> tClass,Object[] matchValues,String[] operators ,Field[] matchKeys,Connection connection, boolean and) throws WormException {
 		if (matchValues.length != matchKeys.length) throw new WormException();

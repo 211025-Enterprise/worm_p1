@@ -1,13 +1,13 @@
 package com.revature.services;
 
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Properties;
 
 public class SQLConnector {
-	private static final String url = "jdbc:postgresql://enterprise.cj9bj3alk8be.us-east-2.rds.amazonaws.com:5432/postgres?currentSchema=p1";
-	private static final String username = "rhaynes";
-	private static final String password = "WarpDamm1tWarp!!";
 	private static SQLConnector instance;
 
 	private SQLConnector() {
@@ -18,11 +18,16 @@ public class SQLConnector {
 		return instance;
 	}
 	//connects to sql server
-	public static Connection getConnection() throws SQLException {
+	public static Connection getConnection(String absPathToSettings) throws SQLException {
+		Properties loadProps = new Properties();
+		try {
+			loadProps.loadFromXML(new FileInputStream(absPathToSettings));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		try {
 			Class.forName("org.postgresql.Driver");
-
-			return DriverManager.getConnection(url, username, password);
+			return DriverManager.getConnection(loadProps.getProperty("url"), loadProps.getProperty("username"), loadProps.getProperty("password"));
 		} catch (ClassNotFoundException | SQLException e) {
 			e.printStackTrace();
 		}

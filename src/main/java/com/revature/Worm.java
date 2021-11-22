@@ -16,7 +16,8 @@ import java.util.concurrent.*;
 public class Worm {
 	private static final Connection[] connections = new Connection[10];
 	private static final Boolean[] connectionsInUse = new Boolean[10];
-	private static final ExecutorService threadPool = Executors.newFixedThreadPool(10);
+	private static ExecutorService threadPool;
+	private static String absPathToSettings;
 	public static Worm instance = null;
 	private Worm()  {
 	}
@@ -26,7 +27,7 @@ public class Worm {
 				connectionsInUse[i] = true;
 				try {
 					if (connections[i] == null || connections[i].isClosed())
-						connections[i] = SQLConnector.getConnection();
+						connections[i] = SQLConnector.getConnection(absPathToSettings);
 					return i;
 				} catch (SQLException e) {e.printStackTrace();}
 			}
@@ -47,13 +48,16 @@ public class Worm {
 	 * Starts the threadpool and all connections. Must be called before anything else
 	 * @return the static instance of Worm
 	 */
-	public static Worm getInstance() {
+	public static Worm getInstance(String absPathToSettings) {
 		if (instance == null)
 		{
+
 			instance = new Worm();
+			Worm.absPathToSettings = absPathToSettings;
+			Worm.threadPool = Executors.newFixedThreadPool(10);
 			for (int i = 0; i < 10; i++) {
 				try {
-					connections[i] = SQLConnector.getConnection();
+					connections[i] = SQLConnector.getConnection(absPathToSettings);
 				} catch (SQLException e) {
 					e.printStackTrace();
 				}
@@ -82,11 +86,11 @@ public class Worm {
 	 * @param object The object to be added to the SQL database
 	 * @return 1 on success and 0 or -1 on failure
 	 */
-	static public int    add(Object object){
-		Future<Integer> fb= threadPool.submit(()-> {
+	static public Object    add(Object object){
+		Future<Object> fb= threadPool.submit(()-> {
 			int i = -1;
-			int out = 0;
-			while ((i = getInstance().getFreeConnection())==-1) {System.out.println("Waiting");
+			Object out = null;
+			while ((i = instance.getFreeConnection())==-1) {System.out.println("Waiting");
 				synchronized (connectionsInUse){
 					connectionsInUse.wait();
 				}
@@ -97,7 +101,7 @@ public class Worm {
 			} catch (IllegalAccessException e) {
 				e.printStackTrace();
 			}
-			getInstance().freeConnection(i);
+			instance.freeConnection(i);
 			return out;
 		});
 		try {
@@ -119,14 +123,14 @@ public class Worm {
 		Future<List<?>> fb= threadPool.submit(()-> {
 			int i = -1;
 			List<?> list = null;
-			while ((i = getInstance().getFreeConnection())==-1) {System.out.println("Waiting");
+			while ((i = instance.getFreeConnection())==-1) {System.out.println("Waiting");
 				synchronized (connectionsInUse){
 					connectionsInUse.wait();
 				}
 
 			}
 			list = new dao().readAll(clazz,connections[i]);
-			getInstance().freeConnection(i);
+			instance.freeConnection(i);
 			return list;
 		});
 		try {
@@ -147,7 +151,7 @@ public class Worm {
 		Future<List<?>> fb= threadPool.submit(()-> {
 			int i = -1;
 			List<?> list = null;
-			while ((i = getInstance().getFreeConnection())==-1) {System.out.println("Waiting");
+			while ((i = instance.getFreeConnection())==-1) {System.out.println("Waiting");
 				synchronized (connectionsInUse){
 					connectionsInUse.wait();
 				}
@@ -158,7 +162,7 @@ public class Worm {
 				chars[j] = "=";
 			}
 			list = new dao().read(clazz,matchValues,chars,matchKeys,connections[i],true);
-			getInstance().freeConnection(i);
+			instance.freeConnection(i);
 			return list;
 		});
 		try {
@@ -179,14 +183,14 @@ public class Worm {
 		Future<List<?>> fb= threadPool.submit(()-> {
 			List<?> list = null;
 			int i = -1;
-			while ((i = getInstance().getFreeConnection())==-1) {System.out.println("Waiting");
+			while ((i = instance.getFreeConnection())==-1) {System.out.println("Waiting");
 				synchronized (connectionsInUse){
 					connectionsInUse.wait();
 				}
 
 			}
 			list = new dao().read(clazz,matchValues,comperators,matchKeys,connections[i],useAnd);
-			getInstance().freeConnection(i);
+			instance.freeConnection(i);
 			return list;
 		});
 		try {
@@ -207,14 +211,14 @@ public class Worm {
 		Future<Integer> fb= threadPool.submit(()-> {
 			int i = -1;
 			int out = -1;
-			while ((i = getInstance().getFreeConnection())==-1) {System.out.println("Waiting");
+			while ((i = instance.getFreeConnection())==-1) {System.out.println("Waiting");
 				synchronized (connectionsInUse){
 					connectionsInUse.wait();
 				}
 
 			}
 			out = new dao().update(clazz,obj,matchValues,matchKeys,connections[i]);
-			getInstance().freeConnection(i);
+			instance.freeConnection(i);
 			return out;
 		});
 		try {
@@ -237,14 +241,14 @@ public class Worm {
 		Future<Integer> fb= threadPool.submit(()-> {
 			int i = -1;
 			int out = 0;
-			while ((i = getInstance().getFreeConnection())==-1) {System.out.println("Waiting");
+			while ((i = instance.getFreeConnection())==-1) {System.out.println("Waiting");
 				synchronized (connectionsInUse){
 					connectionsInUse.wait();
 				}
 
 			}
 			out = new dao().update(clazz,changeValues,changeKeys,matchValues,matchKeys,connections[i]);
-			getInstance().freeConnection(i);
+			instance.freeConnection(i);
 			return out;
 		});
 		try {
@@ -265,7 +269,7 @@ public class Worm {
 		Future<Integer> fb= threadPool.submit(()-> {
 		int i = -1;
 		int out = -1;
-		while ((i = getInstance().getFreeConnection())==-1) {System.out.println("Waiting");
+		while ((i = instance.getFreeConnection())==-1) {System.out.println("Waiting");
 				synchronized (connectionsInUse){
 					connectionsInUse.wait();
 				}
@@ -273,7 +277,7 @@ public class Worm {
 			}
 
 		out = new dao().delete(clazz,matchValues,matchKeys,connections[i]);
-		getInstance().freeConnection(i);
+		instance.freeConnection(i);
 		return out;
 	});
 		try {
