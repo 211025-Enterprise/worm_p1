@@ -1,8 +1,36 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
-<properties>
-<comment/>
-<entry key="url">jdbc:postgresql://enterprise.cj9bj3alk8be.us-east-2.rds.amazonaws.com:5432/postgres?currentSchema=p1</entry>
-<entry key="pasword">WarpDamm1tWarp!!</entry>
-<entry key="username">rhaynes</entry>
-</properties>
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
+                      http://maven.apache.org/xsd/settings-1.0.0.xsd">
+
+  <activeProfiles>
+    <activeProfile>github</activeProfile>
+  </activeProfiles>
+
+  <profiles>
+    <profile>
+      <id>github</id>
+      <repositories>
+        <repository>
+          <id>central</id>
+          <url>https://repo1.maven.org/maven2</url>
+        </repository>
+        <repository>
+          <id>github</id>
+          <url>https://maven.pkg.github.com/rphaynes/worm_p1</url>
+          <snapshots>
+            <enabled>true</enabled>
+          </snapshots>
+        </repository>
+      </repositories>
+    </profile>
+  </profiles>
+
+  <servers>
+    <server>
+      <id>github</id>
+      <username>rphaynes</username>
+      <password>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</password>
+    </server>
+  </servers>
+</settings>
