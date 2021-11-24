@@ -94,7 +94,6 @@ public class Worm {
 				synchronized (connectionsInUse){
 					connectionsInUse.wait();
 				}
-
 				}
 			try {
 				out = new dao().create(object.getClass(),object,connections[i]);
@@ -207,10 +206,10 @@ public class Worm {
 	 * @param matchKeys Corresponding column names to match matchValues.
 	 * @return int of rows updated
 	 */
-	static public Integer update(Class<?> clazz,Object obj,Object[] matchValues,Field[] matchKeys){
-		Future<Integer> fb= threadPool.submit(()-> {
+	static public List<?> update(Class<?> clazz,Object obj,Object[] matchValues,Field[] matchKeys){
+		Future<List<?>> fb= threadPool.submit(()-> {
 			int i = -1;
-			int out = -1;
+			List<?> out = null;
 			while ((i = instance.getFreeConnection())==-1) {System.out.println("Waiting");
 				synchronized (connectionsInUse){
 					connectionsInUse.wait();
@@ -226,7 +225,7 @@ public class Worm {
 		} catch (InterruptedException | ExecutionException e) {
 			e.printStackTrace();
 		}
-		return -1;
+		return null;
 	}
 	/**
 	 * <p>Updates all rows that match matchValues with changeValues</p>
@@ -237,10 +236,10 @@ public class Worm {
 	 * @param matchKeys Corresponding column names to match matchValues.
 	 * @return int of updated rows
 	 */
-	static public Integer update(Class<?> clazz,Object[] changeValues,Field[] changeKeys,Object[] matchValues,Field[] matchKeys){
-		Future<Integer> fb= threadPool.submit(()-> {
+	static public List<?> update(Class<?> clazz,Object[] changeValues,Field[] changeKeys,Object[] matchValues,Field[] matchKeys){
+		Future<List<?>> fb= threadPool.submit(()-> {
 			int i = -1;
-			int out = 0;
+			List<?> out = null;
 			while ((i = instance.getFreeConnection())==-1) {System.out.println("Waiting");
 				synchronized (connectionsInUse){
 					connectionsInUse.wait();
@@ -256,7 +255,7 @@ public class Worm {
 		} catch (InterruptedException | ExecutionException e) {
 			e.printStackTrace();
 		}
-		return -1;
+		return null;
 	}
 	/**
 	 * <p>Deletes row[s] from object table</p>

@@ -2,6 +2,8 @@ package com.revature.services;
 import com.revature.models.annotation.*;
 import com.revature.models.enums.*;
 import com.revature.models.exceptions.*;
+
+import java.beans.FeatureDescriptor;
 import java.lang.reflect.*;
 import java.sql.*;
 import java.util.*;
@@ -22,7 +24,6 @@ public class dao<T> {
 	 * @throws IllegalAccessException if field on object could not be accessed
 	 */
 	public T create(Class<T> tClass,T obj,Connection connection) throws IllegalAccessException {
-		int output = -1;
 		String TableName;
 		if (tClass.isAnnotationPresent(ClassWorm.class)) TableName= tClass.getDeclaredAnnotation(ClassWorm.class).table();
 		else TableName = tClass.getSimpleName()+"s";
@@ -43,7 +44,6 @@ public class dao<T> {
 			tble.append(colname).append(" ");
 			cols.append(colname);
 			tble.append(JavaTypeToSqlJava(field.getType())).append(" ");
-
 			if (a != null) {
 				EnumConstraintsWorm[] enumConstraintsWorms= a.constraints();
 				for (EnumConstraintsWorm e : enumConstraintsWorms) {
@@ -86,7 +86,6 @@ public class dao<T> {
 			}
 			if (inserter.executeUpdate() > 0) return obj;
 			else return null;
-
 		}
 		catch (SQLException e) {
 			e.printStackTrace();
@@ -113,7 +112,6 @@ public class dao<T> {
 		StringBuilder keyString = new StringBuilder();
 		int i = 0;
 		for (Field key:matchKeys) {
-
 			String comparitor = (and)? "AND":"OR";
 			if (keyString.length() > 0 ) keyString.append(" ").append(comparitor).append(" ");
 			String keyname =  key.getName().toLowerCase();
@@ -126,43 +124,6 @@ public class dao<T> {
 			int loc = 1;
 			for (Object o:matchValues) {
 				selector.setObject(loc++,o);
-				/*
-				if (JavaTypeToSqlJava(o.getClass()).equals("")){continue;}
-				switch (o.getClass().getTypeName()) {
-					case "java.lang.Boolean":
-					case "boolean":
-						selector.setBoolean(loc++, (Boolean) o);
-						break;
-					case "java.lang.Integer":
-					case "int":
-						selector.setInt(loc++, (Integer) o);
-						break;
-					case "java.lang.Long":
-					case "long":
-						selector.setLong(loc++, (Long) o);
-						break;
-					case "java.lang.Short":
-					case "short":
-						selector.setShort(loc++, (Short) o);
-						break;
-					case "java.lang.Byte":
-					case "byte":
-						selector.setByte(loc++, (Byte) o);
-						break;
-					case "java.lang.Float":
-					case "float":
-						selector.setFloat(loc++, (Float) o);
-						break;
-					case "java.lang.Double":
-					case "double":
-						selector.setDouble(loc++, (Double) o);
-						break;
-					default:
-						selector.setString(loc++, (String) o);
-						break;
-				}
-
-				 */
 			}
 			ResultSet resultSet = selector.executeQuery();
 			while (resultSet.next()){
@@ -174,48 +135,13 @@ public class dao<T> {
 					if (JavaTypeToSqlJava(field.getType()).equals("")){continue;}
 					field.setAccessible(true);
 					field.set(obj,resultSet.getObject(loc++));
-					/*
-					switch (field.getType().getTypeName()) {
-						case "boolean":
-							field.setBoolean(obj,resultSet.getBoolean(loc++));
-							break;
-						case "int":
-							field.setInt(obj,resultSet.getInt(loc++));
-							break;
-						case "long":
-							field.setLong(obj,resultSet.getLong(loc++));
-							break;
-						case "short":
-							field.setShort(obj,resultSet.getShort(loc++));
-							break;
-						case "byte":
-							field.setByte(obj,resultSet.getByte(loc++));
-							break;
-						case "float":
-							field.setFloat(obj,resultSet.getFloat(loc++));
-							break;
-						case "double":
-							field.setDouble(obj,resultSet.getDouble(loc++));
-							break;
-						default:
-							field.set(obj, resultSet.getString(loc++));
-							break;
-					}
-					*/
 				}
 				out.add(obj);
 			}
-
-
-
-
 			}catch (SQLException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
 			e.printStackTrace();
 		}
-
-
 		return out;
-
 	}
 	/**
 	 * Gets all objects from object table
@@ -241,36 +167,6 @@ public class dao<T> {
 					if (JavaTypeToSqlJava(field.getType()).equals("")){continue;}
 					field.setAccessible(true);
 					field.set(obj,resultSet.getObject(loc++));
-					/*
-					switch (field.getType().getTypeName()) {
-						case "boolean":
-							field.setBoolean(obj,resultSet.getBoolean(loc++));
-							break;
-						case "int":
-							field.setInt(obj,resultSet.getInt(loc++));
-							break;
-						case "long":
-							field.setLong(obj,resultSet.getLong(loc++));
-							break;
-						case "short":
-							field.setShort(obj,resultSet.getShort(loc++));
-							break;
-						case "byte":
-							field.setByte(obj,resultSet.getByte(loc++));
-							break;
-						case "float":
-							field.setFloat(obj,resultSet.getFloat(loc++));
-							break;
-						case "double":
-							field.setDouble(obj,resultSet.getDouble(loc++));
-							break;
-						default:
-							field.set(obj, resultSet.getString(loc++));
-							break;
-					}
-
-					 */
-
 				}
 				all.add(obj);
 			}
@@ -290,16 +186,13 @@ public class dao<T> {
 	 * @return int of rows updated
 	 * @throws WormException is thrown if matchValues does not correspond to keys
 	 */
-	public int update(Class<T> tClass,T obj,Object[] matchValues,Field[] matchKeys,Connection connection) throws WormException {
+	public List<T> update(Class<T> tClass,T obj,Object[] matchValues,Field[] matchKeys,Connection connection) throws WormException {
 		if (matchValues.length != matchKeys.length) throw new WormException();
-		int out = -1;
+		List<T> out = null;
 		String TableName;
 		if (tClass.isAnnotationPresent(ClassWorm.class)) TableName= tClass.getDeclaredAnnotation(ClassWorm.class).table();
 		else TableName = tClass.getSimpleName()+"s";
 		TableName = TableName.toLowerCase();
-
-
-
 		Field[] fields = tClass.getDeclaredFields();
 		StringBuilder keyString = new StringBuilder();
 		StringBuilder cols = new StringBuilder();
@@ -330,90 +223,27 @@ public class dao<T> {
 				o.setAccessible(true);
 				if (JavaTypeToSqlJava(o.getType()).equals("")){continue;}
 				selector.setObject(loc++, o.get(obj));
-				/*
-				switch (o.getType().toString()) {
-					case "java.lang.Boolean":
-					case "boolean":
-						selector.setBoolean(loc++, o.getBoolean(obj));
-						break;
-					case "java.lang.Integer":
-					case "int":
-						selector.setInt(loc++, o.getInt(obj));
-						break;
-					case "java.lang.Long":
-					case "long":
-						selector.setLong(loc++, o.getLong(obj));
-						break;
-					case "java.lang.Short":
-					case "short":
-						selector.setShort(loc++, o.getShort(obj));
-						break;
-					case "java.lang.Byte":
-					case "byte":
-						selector.setByte(loc++, o.getByte(obj));
-						break;
-					case "java.lang.Float":
-					case "float":
-						selector.setFloat(loc++, o.getFloat(obj));
-						break;
-					case "java.lang.Double":
-					case "double":
-						selector.setDouble(loc++, o.getDouble(obj));
-						break;
-					default:
-						selector.setString(loc++, (String) o.get(obj));
-						break;
-				}
-
-				 */
 			}
 			for (Object o:matchValues) {
 				if (JavaTypeToSqlJava(o.getClass()).equals("")){continue;}
 				selector.setObject(loc++,o);
-				/*
-				switch (o.getClass().getTypeName()) {
-					case "java.lang.Boolean":
-					case "boolean":
-						selector.setBoolean(loc++, (Boolean) o);
-						break;
-					case "java.lang.Integer":
-					case "int":
-						selector.setInt(loc++, (Integer) o);
-						break;
-					case "java.lang.Long":
-					case "long":
-						selector.setLong(loc++, (Long) o);
-						break;
-					case "java.lang.Short":
-					case "short":
-						selector.setShort(loc++, (Short) o);
-						break;
-					case "java.lang.Byte":
-					case "byte":
-						selector.setByte(loc++, (Byte) o);
-						break;
-					case "java.lang.Float":
-					case "float":
-						selector.setFloat(loc++, (Float) o);
-						break;
-					case "java.lang.Double":
-					case "double":
-						selector.setDouble(loc++, (Double) o);
-						break;
-					default:
-						selector.setString(loc++, (String) o);
-						break;
-				}
-
-				 */
 			}
 
-			out= selector.executeUpdate();
+			selector.executeUpdate();
+			ResultSet resultSet = selector.getResultSet();
+			out = new ArrayList<>();
+			while (resultSet.next()) {
+				Constructor<?> constructor = Arrays.stream(tClass.getDeclaredConstructors()).filter(x->x.getParameterCount() == 0).findFirst().orElse(null);
+				constructor.setAccessible(true);
+				T o= (T) constructor.newInstance();
+				int i = 1;
+				for (Field field: o.getClass().getDeclaredFields()){
+					field.set(o,resultSet.getObject(i++));
+				}
+				out.add(o);
 
-
-
-
-		}catch (SQLException | IllegalAccessException e) {
+			}
+		}catch (SQLException | InvocationTargetException | InstantiationException | IllegalAccessException e) {
 			e.printStackTrace();
 		}
 
@@ -433,10 +263,10 @@ public class dao<T> {
 	 * @return int of updated rows
 	 * @throws WormException is thrown if Values does not correspond to keys
 	 */
-	public int update(Class<T> tClass,Object[] changeValues,Field[] changeKeys,Object[] matchValues,Field[] matchKeys,Connection connection) throws WormException {
+	public List<T> update(Class<T> tClass,Object[] changeValues,Field[] changeKeys,Object[] matchValues,Field[] matchKeys,Connection connection) throws WormException {
 		if (matchValues.length != matchKeys.length) throw new WormException();
 		if (changeValues.length != changeKeys.length) throw new WormException();
-		int out = -1;
+		List<T> out = null;
 		String TableName;
 		if (tClass.isAnnotationPresent(ClassWorm.class)) TableName= tClass.getDeclaredAnnotation(ClassWorm.class).table();
 		else TableName = tClass.getSimpleName()+"s";
@@ -480,94 +310,30 @@ public class dao<T> {
 			for (Object o:changeValues) {
 				if (JavaTypeToSqlJava(o.getClass()).equals("")){continue;}
 				selector.setObject(loc++, o);
-				/*
-				switch (o.getClass().getTypeName().toString()) {
-					case "java.lang.Boolean":
-					case "boolean":
-						selector.setBoolean(loc++, (Boolean) o);
-						break;
-					case "java.lang.Integer":
-					case "int":
-						selector.setInt(loc++, (Integer) o);
-						break;
-					case "java.lang.Long":
-					case "long":
-						selector.setLong(loc++, (Long) o);
-						break;
-					case "java.lang.Short":
-					case "short":
-						selector.setShort(loc++, (Short) o);
-						break;
-					case "java.lang.Byte":
-					case "byte":
-						selector.setByte(loc++, (Byte) o);
-						break;
-					case "java.lang.Float":
-					case "float":
-						selector.setFloat(loc++, (Float) o);
-						break;
-					case "java.lang.Double":
-					case "double":
-						selector.setDouble(loc++, (Double) o);
-						break;
-					default:
-						selector.setString(loc++, (String) o);
-						break;
-				}
-
-			 */
 			}
 			for (Object o:matchValues) {
 				if (JavaTypeToSqlJava(o.getClass()).equals("")){continue;}
 				selector.setObject(loc++, o);
-				/*
-				switch (o.getClass().getTypeName()) {
-					case "java.lang.Boolean":
-					case "boolean":
-						selector.setBoolean(loc++, (Boolean) o);
-						break;
-					case "java.lang.Integer":
-					case "int":
-						selector.setInt(loc++, (Integer) o);
-						break;
-					case "java.lang.Long":
-					case "long":
-						selector.setLong(loc++, (Long) o);
-						break;
-					case "java.lang.Short":
-					case "short":
-						selector.setShort(loc++, (Short) o);
-						break;
-					case "java.lang.Byte":
-					case "byte":
-						selector.setByte(loc++, (Byte) o);
-						break;
-					case "java.lang.Float":
-					case "float":
-						selector.setFloat(loc++, (Float) o);
-						break;
-					case "java.lang.Double":
-					case "double":
-						selector.setDouble(loc++, (Double) o);
-						break;
-					default:
-						selector.setString(loc++, (String) o);
-						break;
-				}
-				*/
 			}
 
 			System.out.println(selector);
-			out= selector.executeUpdate();
+			selector.executeUpdate();
+			ResultSet resultSet = selector.getResultSet();
+			out = new ArrayList<>();
+			while (resultSet.next()) {
+				Constructor<?> constructor = Arrays.stream(tClass.getDeclaredConstructors()).filter(x->x.getParameterCount() == 0).findFirst().orElse(null);
+				constructor.setAccessible(true);
+				T obj= (T) constructor.newInstance();
+				int i = 1;
+				for (Field field: obj.getClass().getDeclaredFields()){
+					field.set(obj,resultSet.getObject(i++));
+				}
+				out.add(obj);
 
-
-
-
-		}catch (SQLException e) {
+			}
+		}catch (SQLException | InvocationTargetException | InstantiationException | IllegalAccessException e) {
 			e.printStackTrace();
 		}
-
-
 
 
 		return out;
@@ -602,42 +368,6 @@ public class dao<T> {
 			for (Object o:matchValues) {
 				if (JavaTypeToSqlJava(o.getClass()).equals("")){continue;}
 				selector.setObject(loc++, o);
-				/*
-				switch (o.getClass().getTypeName()) {
-					case "java.lang.Boolean":
-					case "boolean":
-						selector.setBoolean(loc++, (Boolean) o);
-						break;
-					case "java.lang.Integer":
-					case "int":
-						selector.setInt(loc++, (Integer) o);
-						break;
-					case "java.lang.Long":
-					case "long":
-						selector.setLong(loc++, (Long) o);
-						break;
-					case "java.lang.Short":
-					case "short":
-						selector.setShort(loc++, (Short) o);
-						break;
-					case "java.lang.Byte":
-					case "byte":
-						selector.setByte(loc++, (Byte) o);
-						break;
-					case "java.lang.Float":
-					case "float":
-						selector.setFloat(loc++, (Float) o);
-						break;
-					case "java.lang.Double":
-					case "double":
-						selector.setDouble(loc++, (Double) o);
-						break;
-					default:
-						selector.setString(loc++, (String) o);
-						break;
-				}
-
-				 */
 			}
 			out = selector.executeUpdate();
 		}catch (SQLException e) {
