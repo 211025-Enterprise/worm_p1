@@ -239,6 +239,7 @@ public class dao<T> {
 				int i = 1;
 				for (Field field: o.getClass().getDeclaredFields()){
 					field.set(o,resultSet.getObject(i++));
+
 				}
 				out.add(o);
 
@@ -404,6 +405,8 @@ public class dao<T> {
 		}
 		if 	(type.getTypeName().equals("java.lang.String"))
 			return "varchar";
+		if (type.getTypeName().equals("java.time.LocalDate"))
+			return "date";
 		return "";
 	}
 }
