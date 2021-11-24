@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+    <comment/>
+    <entry key="url">jdbc:postgresql://enterprise.cj9bj3alk8be.us-east-2.rds.amazonaws.com:5432/postgres?currentSchema=p1</entry>
+    <entry key="password">WarpDamm1tWarp!!</entry>
+    <entry key="username">rhaynes</entry>
+</properties>

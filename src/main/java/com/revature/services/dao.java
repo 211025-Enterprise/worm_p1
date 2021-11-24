@@ -6,6 +6,8 @@ import com.revature.models.exceptions.*;
 import java.beans.FeatureDescriptor;
 import java.lang.reflect.*;
 import java.sql.*;
+import java.sql.Date;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -132,9 +134,14 @@ public class dao<T> {
 				T obj= (T) constructor.newInstance();
 				loc = 1;
 				for (Field field:fields) {
-					if (JavaTypeToSqlJava(field.getType()).equals("")){continue;}
+					if (JavaTypeToSqlJava(field.getType()).equals("")) {
+						continue;
+					}
 					field.setAccessible(true);
-					field.set(obj,resultSet.getObject(loc++));
+					Object temp = resultSet.getObject(loc++);
+					if (field.getType().equals(LocalDate.class)) field.set(obj, ((Date)temp).toLocalDate());
+					else field.set(obj, temp);
+
 				}
 				out.add(obj);
 			}
@@ -166,7 +173,9 @@ public class dao<T> {
 				for (Field field:fields) {
 					if (JavaTypeToSqlJava(field.getType()).equals("")){continue;}
 					field.setAccessible(true);
-					field.set(obj,resultSet.getObject(loc++));
+					Object temp = resultSet.getObject(loc++);
+					if (field.getType().equals(LocalDate.class)) field.set(obj, ((Date)temp).toLocalDate());
+					else field.set(obj, temp);
 				}
 				all.add(obj);
 			}
@@ -216,7 +225,7 @@ public class dao<T> {
 		qmks.deleteCharAt(qmks.length()-1);
 		cols.deleteCharAt(cols.length()-1);
 
-		String sql = "UPDATE "+TableName + " SET ( "+cols+" )=( "+qmks+" ) WHERE "+keyString.toString();
+		String sql = "UPDATE "+TableName + " SET ( "+cols+" )=( "+qmks+" ) WHERE "+keyString.toString() + " RETURNING *";
 		try ( PreparedStatement selector =  connection.prepareStatement(sql) ) {
 			int loc = 1;
 			for (Field o:fields) {
@@ -229,16 +238,21 @@ public class dao<T> {
 				selector.setObject(loc++,o);
 			}
 
-			selector.executeUpdate();
-			ResultSet resultSet = selector.getResultSet();
+			ResultSet resultSet = selector.executeQuery();
+			if (resultSet==null) return null;
 			out = new ArrayList<>();
 			while (resultSet.next()) {
 				Constructor<?> constructor = Arrays.stream(tClass.getDeclaredConstructors()).filter(x->x.getParameterCount() == 0).findFirst().orElse(null);
 				constructor.setAccessible(true);
 				T o= (T) constructor.newInstance();
 				int i = 1;
-				for (Field field: o.getClass().getDeclaredFields()){
-					field.set(o,resultSet.getObject(i++));
+				for (Field field: tClass.getDeclaredFields()){
+					if (JavaTypeToSqlJava(field.getType()).equals("")){continue;}
+					System.out.println(field +" : " +i);
+					field.setAccessible(true);
+					Object temp = resultSet.getObject(i++);
+					if (field.getType().equals(LocalDate.class)) field.set(o, ((Date)temp).toLocalDate());
+					else field.set(o, temp);
 
 				}
 				out.add(o);
@@ -304,7 +318,7 @@ public class dao<T> {
 			cols.append(')');
 			qmks.append(')');
 		}
-		String sql = "UPDATE "+TableName + " SET "+cols+"="+qmks+" WHERE "+keyString.toString();
+		String sql = "UPDATE "+TableName + " SET "+cols+"="+qmks+" WHERE "+keyString.toString() + " RETURNING *";
 		try ( PreparedStatement selector =  connection.prepareStatement(sql); ) {
 			int loc = 1;
 
@@ -318,16 +332,21 @@ public class dao<T> {
 			}
 
 			System.out.println(selector);
-			selector.executeUpdate();
-			ResultSet resultSet = selector.getResultSet();
+			ResultSet resultSet = selector.executeQuery();
+			if (resultSet==null) return null;
 			out = new ArrayList<>();
 			while (resultSet.next()) {
+
 				Constructor<?> constructor = Arrays.stream(tClass.getDeclaredConstructors()).filter(x->x.getParameterCount() == 0).findFirst().orElse(null);
 				constructor.setAccessible(true);
 				T obj= (T) constructor.newInstance();
 				int i = 1;
-				for (Field field: obj.getClass().getDeclaredFields()){
-					field.set(obj,resultSet.getObject(i++));
+				for (Field field: tClass.getDeclaredFields()){
+					if (JavaTypeToSqlJava(field.getType()).equals("")){continue;}
+					field.setAccessible(true);
+					Object temp = resultSet.getObject(i++);
+					if (field.getType().equals(LocalDate.class)) field.set(obj, ((Date)temp).toLocalDate());
+					else field.set(obj, temp);
 				}
 				out.add(obj);
 

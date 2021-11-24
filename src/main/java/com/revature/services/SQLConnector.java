@@ -18,10 +18,10 @@ public class SQLConnector {
 		return instance;
 	}
 	//connects to sql server
-	public static Connection getConnection(String absPathToSettings) throws SQLException {
+	public static Connection getConnection(String Settings) throws SQLException {
 		Properties loadProps = new Properties();
 		try {
-			loadProps.loadFromXML(new FileInputStream(absPathToSettings));
+			loadProps.loadFromXML(SQLConnector.class.getClassLoader().getResourceAsStream(Settings));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

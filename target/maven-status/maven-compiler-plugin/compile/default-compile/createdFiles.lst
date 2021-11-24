@@ -1,4 +1,5 @@
 com\revature\models\annotation\FieldWorm.class
+Main.class
 com\revature\models\annotation\ClassWorm.class
 com\revature\Worm.class
 com\revature\models\enums\EnumConstraintsWorm.class

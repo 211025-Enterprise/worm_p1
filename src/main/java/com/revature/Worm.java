@@ -48,12 +48,12 @@ public class Worm {
 	 * Starts the threadpool and all connections. Must be called before anything else
 	 * @return the static instance of Worm
 	 */
-	public static Worm getInstance(String absPathToSettings) {
+	public static Worm getInstance(String SettingsFile) {
 		if (instance == null)
 		{
 
 			instance = new Worm();
-			Worm.absPathToSettings = absPathToSettings;
+			Worm.absPathToSettings = SettingsFile;
 			Worm.threadPool = Executors.newFixedThreadPool(10);
 			for (int i = 0; i < 10; i++) {
 				try {
